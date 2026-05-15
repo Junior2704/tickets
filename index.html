@@ -55,56 +55,94 @@ button{
 <input type="text" id="motif" placeholder="Motif">
 <input type="number" id="montant" placeholder="Montant">
 
-<button onclick="envoyerTicket()">Envoyer à l'impression</button>
+<button onclick="genererImage()">Générer image ticket</button>
 
 </div>
 
+<canvas id="canvas" style="display:none;"></canvas>
+
 <script>
 
-function genererTexte(){
+function genererImage(){
+
     const motif = document.getElementById("motif").value;
     const montant = document.getElementById("montant").value;
 
     if(!motif || !montant){
         alert("Remplis tout");
-        return null;
+        return;
     }
 
     const date = new Date().toLocaleString("fr-FR");
 
-    // ⚠️ IMPORTANT : pas de retour cassé
-    return `TICKETS-PAIEMENT
-----------------------
-Date : ${date}
-Motif : ${motif}
-----------------------
-Montant : ${montant} €
-----------------------
-Merci`;
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // format ticket 58mm (approx 384px width)
+    canvas.width = 384;
+    canvas.height = 500;
+
+    // fond blanc
+    ctx.fillStyle = "white";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = "black";
+
+    // titre
+    ctx.font = "bold 22px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("TICKETS-PAIEMENT", canvas.width/2, 40);
+
+    // ligne
+    ctx.font = "14px monospace";
+    ctx.fillText("------------------------", canvas.width/2, 70);
+
+    // date
+    ctx.textAlign = "left";
+    ctx.fillText("Date: " + date, 20, 110);
+
+    // motif
+    ctx.fillText("Motif: " + motif, 20, 150);
+
+    // ligne
+    ctx.fillText("------------------------", 20, 190);
+
+    // montant
+    ctx.font = "bold 28px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(montant + " €", canvas.width/2, 260);
+
+    // ligne
+    ctx.font = "14px monospace";
+    ctx.fillText("------------------------", canvas.width/2, 310);
+
+    ctx.fillText("Merci de votre visite", canvas.width/2, 350);
+
+    // conversion image
+    const image = canvas.toDataURL("image/png");
+
+    telechargerEtPartager(image);
 }
 
-async function envoyerTicket(){
+function telechargerEtPartager(image){
 
-    const texte = genererTexte();
-    if(!texte) return;
+    fetch(image)
+    .then(res => res.blob())
+    .then(blob => {
 
-    console.log("TEXTE:", texte); // debug utile
+        const file = new File([blob], "ticket.png", {type:"image/png"});
 
-    if(navigator.share){
-
-        try{
-            await navigator.share({
+        if(navigator.share){
+            navigator.share({
                 title: "Ticket paiement",
-                text: texte
+                files: [file]
             });
-        } catch(e){
-            alert("Partage annulé ou impossible");
+        } else {
+            alert("Partage non supporté, ouvre sur Safari iOS");
         }
 
-    } else {
-        navigator.clipboard.writeText(texte);
-        alert("Ticket copié");
-    }
+    });
+
 }
 
 </script>
