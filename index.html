@@ -72,16 +72,15 @@ function genererTexte(){
 
     const date = new Date().toLocaleString("fr-FR");
 
-    return 
-`TICKETS-PAIEMENT
+    // ⚠️ IMPORTANT : pas de retour cassé
+    return `TICKETS-PAIEMENT
 ----------------------
 Date : ${date}
 Motif : ${motif}
 ----------------------
 Montant : ${montant} €
 ----------------------
-Merci
-`;
+Merci`;
 }
 
 async function envoyerTicket(){
@@ -89,7 +88,8 @@ async function envoyerTicket(){
     const texte = genererTexte();
     if(!texte) return;
 
-    // iOS / Safari : partage natif
+    console.log("TEXTE:", texte); // debug utile
+
     if(navigator.share){
 
         try{
@@ -97,16 +97,13 @@ async function envoyerTicket(){
                 title: "Ticket paiement",
                 text: texte
             });
-
-        }catch(e){
-            alert("Partage annulé");
+        } catch(e){
+            alert("Partage annulé ou impossible");
         }
 
     } else {
-
-        // fallback
         navigator.clipboard.writeText(texte);
-        alert("Ticket copié. Ouvre POS Printer et colle-le.");
+        alert("Ticket copié");
     }
 }
 
