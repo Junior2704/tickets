@@ -117,7 +117,7 @@ function genererImage(){
     ctx.font = "bold 40px Arial";
     ctx.textAlign = "center";
     ctx.fillText(montant + " €", canvas.width/2, 400);
-
+drawLine(ctx, 440);
 
     // EXPORT IMAGE
     const image = canvas.toDataURL("image/png");
