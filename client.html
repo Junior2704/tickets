@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mes Bons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1F3B;
+    --ink-2:#242A4F;
+    --ink-3:#2E3560;
+    --paper:#FBF8F2;
+    --paper-dim:#F1EBDC;
+    --text-dark:#241F3D;
+    --text-muted:rgba(27,31,59,.62);
+    --accent-apero:#FF6B5B;
+    --accent-vin:#8C2F45;
+    --accent-gouter:#E8A33D;
+    --accent-glace:#3FA8C9;
+    --ok:#3FA85E;
+    --danger:#E5484D;
+    --radius:18px;
+    --shadow: 0 10px 30px rgba(15,17,38,.35);
+    font-size:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(120% 100% at 50% 0%, var(--ink-3) 0%, var(--ink) 55%, #14162B 100%);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  h1,h2,h3,.display{ font-family:'Bricolage Grotesque', sans-serif; }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    padding-bottom:96px;
+  }
+
+  header.topbar{
+    padding:28px 20px 18px;
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg, rgba(27,31,59,.97) 60%, rgba(27,31,59,0));
+    backdrop-filter:blur(6px);
+  }
+  header.topbar .eyebrow{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(251,248,242,.5); font-weight:600;
+  }
+  header.topbar h1{
+    margin:2px 0 0; font-size:28px; font-weight:800; letter-spacing:-.01em;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  main{ flex:1; padding:4px 20px 20px; }
+  .panel{ display:none; animation:fadeIn .35s ease; }
+  .panel.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .stamp{
+    width:46px; height:46px; border-radius:50%;
+    border:2px dashed currentColor;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+    transform:rotate(-6deg);
+    background:rgba(251,248,242,.06);
+  }
+  .stamp.sm{ width:36px; height:36px; font-size:16px; }
+  .stamp.lg{ width:80px; height:80px; font-size:36px; border-width:2.5px; }
+
+  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+  .stat-card{
+    background:var(--ink-2); border-radius:var(--radius); padding:16px;
+    border:1px solid rgba(251,248,242,.08); position:relative; overflow:hidden;
+  }
+  .stat-card::after{
+    content:""; position:absolute; right:-20px; top:-20px; width:80px; height:80px;
+    border-radius:50%; background:var(--cat-color); opacity:.14;
+  }
+  .stat-card .stamp{ color:var(--cat-color); margin-bottom:10px; }
+  .stat-card .count{ font-family:'Bricolage Grotesque',sans-serif; font-size:30px; font-weight:800; line-height:1; }
+  .stat-card .label{ font-size:12.5px; color:rgba(251,248,242,.6); margin-top:4px; font-weight:600; }
+
+  .section-title{ display:flex; align-items:center; justify-content:space-between; margin:26px 0 12px; }
+  .section-title h2{ font-size:17px; font-weight:700; margin:0; }
+
+  .btn{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:14.5px;
+    border:none; border-radius:14px; padding:13px 18px; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn-primary{ background:var(--accent-gouter); color:#241505; }
+  .btn-ghost{ background:rgba(251,248,242,.08); color:var(--paper); border:1px solid rgba(251,248,242,.18); }
+  .btn-block{ width:100%; }
+  .btn:disabled{ opacity:.5; pointer-events:none; }
+
+  .chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:4px; }
+  .chip{
+    flex-shrink:0; padding:8px 14px; border-radius:99px; font-size:13px; font-weight:600;
+    background:rgba(251,248,242,.06); border:1px solid rgba(251,248,242,.14); color:rgba(251,248,242,.75);
+    cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{ background:var(--paper); color:var(--ink); border-color:var(--paper); }
+
+  .ticket{
+    background:var(--paper); color:var(--text-dark);
+    border-radius:16px; margin-bottom:12px; display:flex; overflow:hidden;
+    box-shadow:0 6px 16px rgba(0,0,0,.22); cursor:pointer; position:relative;
+    border-left:5px solid var(--cat-color);
+  }
+  .ticket:active{ transform:scale(.985); }
+  .ticket .stub{ width:64px; flex-shrink:0; display:flex; align-items:center; justify-content:center; position:relative; }
+  .ticket .stub::after{ content:""; position:absolute; right:0; top:0; bottom:0; width:0; border-right:2px dashed rgba(36,31,61,.18); }
+  .ticket .body{ padding:13px 14px 13px 12px; flex:1; min-width:0; }
+  .ticket .row1{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .ticket .cat-name{ font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15.5px; }
+  .ticket .badge{ font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:.04em; }
+  .badge.actif{ background:rgba(63,168,94,.15); color:#2C7A44; }
+  .badge.utilise{ background:rgba(90,90,110,.15); color:#5A5A6E; }
+  .badge.revoque{ background:rgba(229,72,77,.13); color:#C43438; }
+  .ticket .comment{ font-size:13px; color:var(--text-muted); margin-top:4px; line-height:1.35; }
+  .ticket .date{ font-size:11px; color:var(--text-muted); margin-top:6px; font-weight:500; }
+
+  .empty-state{ text-align:center; padding:50px 20px; color:rgba(251,248,242,.45); }
+  .empty-state .em{ font-size:40px; display:block; margin-bottom:10px; }
+
+  nav.bottomnav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px;
+    background:rgba(20,22,43,.92); backdrop-filter:blur(10px);
+    border-top:1px solid rgba(251,248,242,.08);
+    display:flex; z-index:25; padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  nav.bottomnav button{
+    flex:1; background:none; border:none; color:rgba(251,248,242,.45);
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-size:10.5px; font-weight:700; padding:6px 2px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  nav.bottomnav button .ic{ font-size:19px; }
+  nav.bottomnav button.active{ color:var(--paper); }
+  nav.bottomnav button.active .ic{ transform:translateY(-2px); }
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,11,22,.66); backdrop-filter:blur(3px);
+    display:none; align-items:flex-end; justify-content:center; z-index:60;
+  }
+  .modal-overlay.active{ display:flex; animation:fadeIn .2s ease; }
+  .modal{
+    background:var(--paper); color:var(--text-dark); width:100%; max-width:480px;
+    border-radius:22px 22px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+    max-height:88vh; overflow-y:auto; animation:slideUp .28s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes slideUp{ from{ transform:translateY(40px); opacity:0;} to{transform:none; opacity:1;} }
+  .modal-handle{ width:40px; height:4px; background:rgba(36,31,61,.18); border-radius:99px; margin:0 auto 16px; }
+  .modal h3{ font-size:19px; margin:0 0 4px; font-weight:800; }
+  .modal .sub{ font-size:13px; color:var(--text-muted); margin-bottom:16px; }
+
+  .detail-grid{ margin:14px 0; }
+  .detail-row{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(36,31,61,.08); font-size:14px; }
+  .detail-row .k{ color:var(--text-muted); font-weight:600; }
+  .detail-row .v{ font-weight:700; text-align:right; max-width:60%; }
+
+  /* QR view */
+  .qr-view{ text-align:center; padding:6px 0 4px; }
+  .qr-box{
+    width:230px; height:230px; margin:10px auto 16px; background:#fff; border-radius:16px;
+    display:flex; align-items:center; justify-content:center; padding:14px;
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+  }
+  .qr-waiting{ font-size:13px; color:var(--text-muted); font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .dot-pulse{ width:8px; height:8px; border-radius:50%; background:var(--accent-gouter); animation:pulse 1s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:.3; transform:scale(.8);} 50%{ opacity:1; transform:scale(1.15);} }
+  .qr-success{ display:none; }
+  .qr-success .big-check{ font-size:56px; }
+  .qr-success h3{ margin:8px 0 2px; }
+
+  #loader-overlay{
+    position:fixed; inset:0; background:rgba(10,11,22,.55); backdrop-filter:blur(2px);
+    display:none; align-items:center; justify-content:center; z-index:80;
+  }
+  #loader-overlay.active{ display:flex; }
+  .spinner{
+    width:52px; height:52px; border-radius:50%;
+    border:4px dashed var(--accent-gouter);
+    animation:spin 1s linear infinite;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    background:var(--ink-2);
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  #toast-container{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:90;
+    display:flex; flex-direction:column; gap:8px; width:calc(100% - 40px); max-width:440px;
+  }
+  .toast{
+    background:var(--ink-2); color:var(--paper); border:1px solid rgba(251,248,242,.14);
+    padding:12px 16px; border-radius:14px; font-size:13.5px; font-weight:600;
+    box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;
+    animation:toastIn .25s ease;
+  }
+  .toast.ok{ border-color:rgba(63,168,94,.5); }
+  .toast.error{ border-color:rgba(229,72,77,.5); }
+  @keyframes toastIn{ from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:none;} }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="eyebrow">Mon carnet</div>
+    <h1>🎟️ Mes Bons</h1>
+  </header>
+
+  <main>
+    <!-- ===== ACCUEIL ===== -->
+    <section class="panel active" id="panel-accueil">
+      <div class="section-title"><h2>Mes bons disponibles</h2></div>
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="section-title"><h2>À utiliser bientôt</h2></div>
+      <div id="apercu-recent"></div>
+    </section>
+
+    <!-- ===== MES BONS ===== -->
+    <section class="panel" id="panel-mesbons">
+      <div class="section-title"><h2>Bons disponibles</h2></div>
+      <div class="chips" id="chips-liste">
+        <div class="chip active" data-type="tous">Tous</div>
+        <div class="chip" data-type="apero">🥂 Apéro</div>
+        <div class="chip" data-type="vin">🍷 Vin</div>
+        <div class="chip" data-type="gouter">🍪 Goûter</div>
+        <div class="chip" data-type="glace">🍦 Glace</div>
+      </div>
+      <div id="liste-bons"></div>
+    </section>
+
+    <!-- ===== HISTORIQUE ===== -->
+    <section class="panel" id="panel-historique">
+      <div class="section-title"><h2>Historique</h2></div>
+      <div id="historique-bons"></div>
+    </section>
+  </main>
+
+  <nav class="bottomnav">
+    <button class="active" data-tab="accueil"><span class="ic">🏠</span>Accueil</button>
+    <button data-tab="mesbons"><span class="ic">🎫</span>Mes bons</button>
+    <button data-tab="historique"><span class="ic">🕓</span>Historique</button>
+  </nav>
+</div>
+
+<!-- ===== MODAL DETAIL / QR ===== -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+
+    <div id="detail-view">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <div class="stamp lg" id="detail-stamp"></div>
+        <div>
+          <h3 id="detail-title" style="margin-bottom:2px;"></h3>
+          <span class="badge" id="detail-badge"></span>
+        </div>
+      </div>
+      <div class="detail-grid" id="detail-grid"></div>
+      <div style="display:flex; gap:10px; margin-top:6px;">
+        <button class="btn btn-ghost" id="btn-close-detail" style="flex:1;">Fermer</button>
+        <button class="btn btn-primary" id="btn-utiliser" style="flex:1;">🎫 Utiliser</button>
+      </div>
+    </div>
+
+    <div id="qr-view" class="qr-view" style="display:none;">
+      <h3 id="qr-title">Présentez ce code</h3>
+      <div class="sub">Montrez ce QR code pour que votre bon soit validé.</div>
+      <div class="qr-box" id="qr-box"></div>
+      <div class="qr-waiting" id="qr-waiting"><span class="dot-pulse"></span> En attente de validation…</div>
+      <div class="qr-success" id="qr-success">
+        <div class="big-check">✅</div>
+        <h3>Bon validé !</h3>
+        <div class="sub">Bon appétit / bonne dégustation 🎉</div>
+      </div>
+      <button class="btn btn-ghost btn-block" id="btn-close-qr" style="margin-top:14px;">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="loader-overlay"><div class="spinner">🎫</div></div>
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAw8DGUJlxu9UZ_l1RagF_-carRwja231Y",
+  authDomain: "caisse-enregistreuse-2bbee.firebaseapp.com",
+  projectId: "caisse-enregistreuse-2bbee",
+  storageBucket: "caisse-enregistreuse-2bbee.firebasestorage.app",
+  messagingSenderId: "898347361812",
+  appId: "1:898347361812:web:80591b2c3146fafaa6a901",
+  measurementId: "G-D5P8N0S5CS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ================= CATEGORIES ================= */
+const CATS = {
+  apero:  { label:'Apéro',  emoji:'🥂', color:'var(--accent-apero)'  },
+  vin:    { label:'Vin',    emoji:'🍷', color:'var(--accent-vin)'    },
+  gouter: { label:'Goûter', emoji:'🍪', color:'var(--accent-gouter)' },
+  glace:  { label:'Glace',  emoji:'🍦', color:'var(--accent-glace)'  }
+};
+const STATUT_LABEL = { actif:'Actif', utilise:'Utilisé', revoque:'Révoqué' };
+
+let allBons = [];
+let currentFilterType = 'tous';
+let currentDetailId = null;
+let docListenerUnsub = null;
+
+/* ================= HELPERS UI ================= */
+function showLoader(v){ document.getElementById('loader-overlay').classList.toggle('active', v); }
+
+function showToast(msg, type='ok'){
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = (type==='error' ? '⚠️ ' : type==='ok' ? '✅ ' : '') + msg;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2800);
+}
+
+function fmtDate(ts){
+  if(!ts || !ts.toDate) return '—';
+  const d = ts.toDate();
+  return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'short', year:'numeric'}) + ' à ' +
+         d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+function escapeHTML(s){ const d=document.createElement('div'); d.innerText=s; return d.innerHTML; }
+
+/* ================= TABS ================= */
+document.querySelectorAll('nav.bottomnav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.bottomnav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================= FIRESTORE LISTENER ================= */
+function initListener(){
+  showLoader(true);
+  db.collection('bons').orderBy('dateCreation','desc').onSnapshot(snap=>{
+    allBons = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    showLoader(false);
+    renderStats();
+    renderApercu();
+    renderListe();
+    renderHistorique();
+  }, err=>{
+    showLoader(false);
+    showToast("Connexion impossible : "+err.message, 'error');
+  });
+}
+
+/* ================= STATS ================= */
+function renderStats(){
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = Object.keys(CATS).map(key=>{
+    const c = CATS[key];
+    const count = allBons.filter(b=>b.type===key && b.statut==='actif').length;
+    return `<div class="stat-card" style="--cat-color:${c.color}">
+      <div class="stamp">${c.emoji}</div>
+      <div class="count">${count}</div>
+      <div class="label">${c.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderApercu(){
+  const wrap = document.getElementById('apercu-recent');
+  const items = allBons.filter(b=>b.statut==='actif').slice(0,4);
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="em">🎟️</span>Aucun bon disponible pour l'instant</div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(ticketHTML).join('');
+  attachTicketClicks(wrap);
+}
+
+/* ================= TICKET RENDERING ================= */
+function ticketHTML(b){
+  const c = CATS[b.type] || {label:b.type, emoji:'🎫', color:'#999'};
+  return `<div class="ticket" style="--cat-color:${c.color}" data-id="${b.id}">
+    <div class="stub"><div class="stamp sm" style="color:${c.color}">${c.emoji}</div></div>
+    <div class="body">
+      <div class="row1">
+        <span class="cat-name">${c.label}</span>
+        <span class="badge ${b.statut}">${STATUT_LABEL[b.statut]||b.statut}</span>
+      </div>
+      ${b.commentaire ? `<div class="comment">${escapeHTML(b.commentaire)}</div>` : ''}
+      <div class="date">Créé le ${fmtDate(b.dateCreation)}</div>
+    </div>
+  </div>`;
+}
+function attachTicketClicks(container){
+  container.querySelectorAll('.ticket').forEach(el=>{
+    el.addEventListener('click', ()=> openDetail(el.dataset.id));
+  });
+}
+
+/* ================= LISTE ================= */
+document.querySelectorAll('#chips-liste .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#chips-liste .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilterType = chip.dataset.type;
+    renderListe();
+  });
+});
+function renderListe(){
+  const wrap = document.getElementById('liste-bons');
+  let items = allBons.filter(b=>b.statut==='actif');
+  if(currentFilterType !== 'tous') items = items.filter(b=>b.type===currentFilterType);
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="em">📭</span>Aucun bon ici</div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(ticketHTML).join('');
+  attachTicketClicks(wrap);
+}
+
+/* ================= HISTORIQUE ================= */
+function renderHistorique(){
+  const wrap = document.getElementById('historique-bons');
+  const items = allBons.filter(b=>b.statut!=='actif');
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="em">🕓</span>Pas encore d'historique</div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(ticketHTML).join('');
+  attachTicketClicks(wrap);
+}
+
+/* ================= DETAIL MODAL ================= */
+function openDetail(id){
+  currentDetailId = id;
+  document.getElementById('detail-view').style.display = 'block';
+  document.getElementById('qr-view').style.display = 'none';
+  const b = allBons.find(x=>x.id===id);
+  if(!b) return;
+  const c = CATS[b.type] || {label:b.type, emoji:'🎫', color:'#999'};
+  document.getElementById('detail-stamp').style.color = c.color;
+  document.getElementById('detail-stamp').innerText = c.emoji;
+  document.getElementById('detail-title').innerText = c.label;
+  const badge = document.getElementById('detail-badge');
+  badge.className = 'badge ' + b.statut;
+  badge.innerText = STATUT_LABEL[b.statut] || b.statut;
+
+  let rows = `
+    <div class="detail-row"><span class="k">Commentaire</span><span class="v">${b.commentaire ? escapeHTML(b.commentaire) : '—'}</span></div>
+    <div class="detail-row"><span class="k">Créé le</span><span class="v">${fmtDate(b.dateCreation)}</span></div>`;
+  if(b.statut==='utilise') rows += `<div class="detail-row"><span class="k">Utilisé le</span><span class="v">${fmtDate(b.dateUtilisation)}</span></div>`;
+  if(b.statut==='revoque') rows += `<div class="detail-row"><span class="k">Révoqué le</span><span class="v">${fmtDate(b.dateRevocation)}</span></div>`;
+  document.getElementById('detail-grid').innerHTML = rows;
+
+  document.getElementById('btn-utiliser').style.display = (b.statut==='actif') ? 'flex' : 'none';
+  document.getElementById('modal-detail').classList.add('active');
+}
+document.getElementById('btn-close-detail').addEventListener('click', ()=> closeDetailModal());
+
+function closeDetailModal(){
+  document.getElementById('modal-detail').classList.remove('active');
+  if(docListenerUnsub){ docListenerUnsub(); docListenerUnsub=null; }
+}
+document.getElementById('modal-detail').addEventListener('click', e=>{
+  if(e.target.id==='modal-detail') closeDetailModal();
+});
+
+/* ================= QR / UTILISER ================= */
+document.getElementById('btn-utiliser').addEventListener('click', ()=>{
+  if(!currentDetailId) return;
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('qr-view').style.display = 'block';
+  document.getElementById('qr-waiting').style.display = 'flex';
+  document.getElementById('qr-success').style.display = 'none';
+
+  const qrBox = document.getElementById('qr-box');
+  qrBox.innerHTML = '';
+  new QRCode(qrBox, { text: currentDetailId, width: 200, height: 200, colorDark:"#1B1F3B", colorLight:"#ffffff" });
+
+  // écoute en temps réel ce bon précis pour détecter la validation par l'admin
+  if(docListenerUnsub) docListenerUnsub();
+  docListenerUnsub = db.collection('bons').doc(currentDetailId).onSnapshot(doc=>{
+    const b = doc.data();
+    if(b && b.statut === 'utilise'){
+      document.getElementById('qr-waiting').style.display = 'none';
+      document.getElementById('qr-success').style.display = 'block';
+      setTimeout(()=>{ closeDetailModal(); showToast('Bon validé !'); }, 1800);
+    }
+  });
+});
+document.getElementById('btn-close-qr').addEventListener('click', ()=> closeDetailModal());
+
+/* ================= INIT ================= */
+initListener();
+</script>
+</body>
+</html>
