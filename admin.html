@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mes Bons — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1F3B;
+    --ink-2:#242A4F;
+    --ink-3:#2E3560;
+    --paper:#FBF8F2;
+    --paper-dim:#F1EBDC;
+    --text-dark:#241F3D;
+    --text-muted:rgba(27,31,59,.62);
+    --accent-apero:#FF6B5B;
+    --accent-vin:#8C2F45;
+    --accent-gouter:#E8A33D;
+    --accent-glace:#3FA8C9;
+    --ok:#3FA85E;
+    --danger:#E5484D;
+    --radius:18px;
+    --shadow: 0 10px 30px rgba(15,17,38,.35);
+    font-size:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(120% 100% at 50% 0%, var(--ink-3) 0%, var(--ink) 55%, #14162B 100%);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  h1,h2,h3,.display{ font-family:'Bricolage Grotesque', sans-serif; }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    padding-bottom:96px;
+  }
+
+  /* ---------- HEADER ---------- */
+  header.topbar{
+    padding:28px 20px 18px;
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg, rgba(27,31,59,.97) 60%, rgba(27,31,59,0));
+    backdrop-filter:blur(6px);
+  }
+  header.topbar .eyebrow{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(251,248,242,.5); font-weight:600;
+  }
+  header.topbar h1{
+    margin:2px 0 0; font-size:28px; font-weight:800; letter-spacing:-.01em;
+    display:flex; align-items:center; gap:8px;
+  }
+  header.topbar h1 .tag{
+    font-size:11px; font-family:'Inter',sans-serif; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; background:var(--ink-3); color:var(--paper);
+    padding:4px 9px; border-radius:99px; border:1px dashed rgba(251,248,242,.35);
+  }
+
+  main{ flex:1; padding:4px 20px 20px; }
+  .panel{ display:none; animation:fadeIn .35s ease; }
+  .panel.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  /* ---------- STAMP BADGE (signature element) ---------- */
+  .stamp{
+    width:46px; height:46px; border-radius:50%;
+    border:2px dashed currentColor;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+    transform:rotate(-6deg);
+    background:rgba(251,248,242,.06);
+  }
+  .stamp.sm{ width:36px; height:36px; font-size:16px; }
+  .stamp.lg{ width:72px; height:72px; font-size:32px; border-width:2.5px; }
+
+  /* ---------- STATS ---------- */
+  .stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+  .stat-card{
+    background:var(--ink-2);
+    border-radius:var(--radius);
+    padding:16px;
+    border:1px solid rgba(251,248,242,.08);
+    position:relative; overflow:hidden;
+  }
+  .stat-card::after{
+    content:""; position:absolute; right:-20px; top:-20px; width:80px; height:80px;
+    border-radius:50%; background:var(--cat-color); opacity:.14;
+  }
+  .stat-card .stamp{ color:var(--cat-color); margin-bottom:10px; }
+  .stat-card .count{ font-family:'Bricolage Grotesque',sans-serif; font-size:30px; font-weight:800; line-height:1; }
+  .stat-card .label{ font-size:12.5px; color:rgba(251,248,242,.6); margin-top:4px; font-weight:600; }
+
+  .section-title{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:26px 0 12px;
+  }
+  .section-title h2{ font-size:17px; font-weight:700; margin:0; }
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:14.5px;
+    border:none; border-radius:14px; padding:13px 18px; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn-primary{ background:var(--accent-gouter); color:#241505; }
+  .btn-ghost{ background:rgba(251,248,242,.08); color:var(--paper); border:1px solid rgba(251,248,242,.18); }
+  .btn-danger{ background:rgba(229,72,77,.14); color:#FF9A9D; border:1px solid rgba(229,72,77,.4); }
+  .btn-block{ width:100%; }
+  .btn:disabled{ opacity:.5; pointer-events:none; }
+
+  .fab{
+    position:fixed; bottom:96px; left:50%; transform:translateX(calc(-50% + 190px));
+    background:var(--accent-gouter); color:#241505; border:none;
+    width:58px; height:58px; border-radius:50%; font-size:24px;
+    box-shadow:0 10px 24px rgba(232,163,61,.45); z-index:25; cursor:pointer;
+  }
+  .fab:active{ transform:translateX(calc(-50% + 190px)) scale(.92); }
+  @media (max-width:480px){ .fab{ transform:translateX(0); right:20px; left:auto; } .fab:active{ transform:scale(.92);} }
+
+  /* ---------- FILTER CHIPS ---------- */
+  .chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:4px; }
+  .chip{
+    flex-shrink:0; padding:8px 14px; border-radius:99px; font-size:13px; font-weight:600;
+    background:rgba(251,248,242,.06); border:1px solid rgba(251,248,242,.14); color:rgba(251,248,242,.75);
+    cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{ background:var(--paper); color:var(--ink); border-color:var(--paper); }
+
+  /* ---------- TICKET CARD ---------- */
+  .ticket{
+    background:var(--paper); color:var(--text-dark);
+    border-radius:16px; margin-bottom:12px; display:flex; overflow:hidden;
+    box-shadow:0 6px 16px rgba(0,0,0,.22); cursor:pointer; position:relative;
+    border-left:5px solid var(--cat-color);
+  }
+  .ticket:active{ transform:scale(.985); }
+  .ticket .stub{
+    width:64px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .ticket .stub::after{
+    content:""; position:absolute; right:0; top:0; bottom:0; width:0;
+    border-right:2px dashed rgba(36,31,61,.18);
+  }
+  .ticket .body{ padding:13px 14px 13px 12px; flex:1; min-width:0; }
+  .ticket .row1{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .ticket .cat-name{ font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:15.5px; }
+  .ticket .badge{
+    font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:99px; text-transform:uppercase; letter-spacing:.04em;
+  }
+  .badge.actif{ background:rgba(63,168,94,.15); color:#2C7A44; }
+  .badge.utilise{ background:rgba(90,90,110,.15); color:#5A5A6E; }
+  .badge.revoque{ background:rgba(229,72,77,.13); color:#C43438; }
+  .ticket .comment{ font-size:13px; color:var(--text-muted); margin-top:4px; line-height:1.35; }
+  .ticket .date{ font-size:11px; color:var(--text-muted); margin-top:6px; font-weight:500; }
+
+  .empty-state{
+    text-align:center; padding:50px 20px; color:rgba(251,248,242,.45);
+  }
+  .empty-state .em{ font-size:40px; display:block; margin-bottom:10px; }
+
+  /* ---------- BOTTOM NAV ---------- */
+  nav.bottomnav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px;
+    background:rgba(20,22,43,.92); backdrop-filter:blur(10px);
+    border-top:1px solid rgba(251,248,242,.08);
+    display:flex; z-index:25; padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  nav.bottomnav button{
+    flex:1; background:none; border:none; color:rgba(251,248,242,.45);
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-size:10.5px; font-weight:700; padding:6px 2px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  nav.bottomnav button .ic{ font-size:19px; }
+  nav.bottomnav button.active{ color:var(--paper); }
+  nav.bottomnav button.active .ic{ transform:translateY(-2px); }
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,11,22,.66); backdrop-filter:blur(3px);
+    display:none; align-items:flex-end; justify-content:center; z-index:60;
+  }
+  .modal-overlay.active{ display:flex; animation:fadeIn .2s ease; }
+  .modal{
+    background:var(--paper); color:var(--text-dark); width:100%; max-width:480px;
+    border-radius:22px 22px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+    max-height:88vh; overflow-y:auto; animation:slideUp .28s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes slideUp{ from{ transform:translateY(40px); opacity:0;} to{transform:none; opacity:1;} }
+  .modal-handle{ width:40px; height:4px; background:rgba(36,31,61,.18); border-radius:99px; margin:0 auto 16px; }
+  .modal h3{ font-size:19px; margin:0 0 4px; font-weight:800; }
+  .modal .sub{ font-size:13px; color:var(--text-muted); margin-bottom:16px; }
+
+  .qty-row{
+    display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid rgba(36,31,61,.08);
+  }
+  .qty-row .stamp{ color:var(--cat-color); }
+  .qty-row .qname{ flex:1; font-weight:700; font-size:14.5px; }
+  .qty-ctrl{ display:flex; align-items:center; gap:10px; }
+  .qty-ctrl button{
+    width:30px; height:30px; border-radius:9px; border:none; background:var(--paper-dim);
+    font-size:16px; font-weight:700; cursor:pointer; color:var(--text-dark);
+  }
+  .qty-ctrl span{ min-width:18px; text-align:center; font-weight:700; }
+
+  .comment-fields{ margin:4px 0 14px 0; display:flex; flex-direction:column; gap:8px; }
+  .comment-fields textarea{
+    width:100%; border-radius:12px; border:1px solid rgba(36,31,61,.14); padding:10px 12px;
+    font-family:'Inter',sans-serif; font-size:13.5px; resize:none; min-height:44px;
+    background:var(--paper-dim); color:var(--text-dark);
+  }
+  .comment-fields .cf-label{ font-size:11px; color:var(--text-muted); font-weight:700; margin-bottom:2px; }
+
+  .detail-grid{ margin:14px 0; }
+  .detail-row{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(36,31,61,.08); font-size:14px; }
+  .detail-row .k{ color:var(--text-muted); font-weight:600; }
+  .detail-row .v{ font-weight:700; text-align:right; max-width:60%; }
+
+  .progress-wrap{ margin-top:10px; }
+  .progress-bar{ height:8px; background:var(--paper-dim); border-radius:99px; overflow:hidden; }
+  .progress-bar .fill{ height:100%; background:var(--accent-gouter); width:0%; transition:width .25s ease; }
+  .progress-text{ font-size:12px; color:var(--text-muted); margin-top:6px; text-align:center; font-weight:600; }
+
+  /* ---------- SCANNER ---------- */
+  .scan-box{
+    background:var(--ink-2); border-radius:20px; padding:16px; border:1px solid rgba(251,248,242,.08);
+  }
+  #reader{ border-radius:14px; overflow:hidden; }
+  .manual-scan{ margin-top:16px; display:flex; gap:8px; }
+  .manual-scan input{
+    flex:1; border-radius:12px; border:1px solid rgba(251,248,242,.18); background:rgba(251,248,242,.06);
+    color:var(--paper); padding:11px 12px; font-size:13.5px; font-family:'Inter',sans-serif;
+  }
+  .scan-hint{ font-size:12.5px; color:rgba(251,248,242,.5); margin-top:10px; text-align:center; }
+
+  /* ---------- LOADER ---------- */
+  #loader-overlay{
+    position:fixed; inset:0; background:rgba(10,11,22,.55); backdrop-filter:blur(2px);
+    display:none; align-items:center; justify-content:center; z-index:80;
+  }
+  #loader-overlay.active{ display:flex; }
+  .spinner{
+    width:52px; height:52px; border-radius:50%;
+    border:4px dashed var(--accent-gouter);
+    animation:spin 1s linear infinite;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    background:var(--ink-2);
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- TOAST ---------- */
+  #toast-container{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:90;
+    display:flex; flex-direction:column; gap:8px; width:calc(100% - 40px); max-width:440px;
+  }
+  .toast{
+    background:var(--ink-2); color:var(--paper); border:1px solid rgba(251,248,242,.14);
+    padding:12px 16px; border-radius:14px; font-size:13.5px; font-weight:600;
+    box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;
+    animation:toastIn .25s ease;
+  }
+  .toast.ok{ border-color:rgba(63,168,94,.5); }
+  .toast.error{ border-color:rgba(229,72,77,.5); }
+  @keyframes toastIn{ from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:none;} }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="eyebrow">Espace admin</div>
+    <h1>🎟️ Mes Bons <span class="tag">admin</span></h1>
+  </header>
+
+  <main>
+    <!-- ===== ACCUEIL ===== -->
+    <section class="panel active" id="panel-accueil">
+      <div class="section-title"><h2>Bons actifs</h2></div>
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="section-title"><h2>Aperçu récent</h2></div>
+      <div id="apercu-recent"></div>
+    </section>
+
+    <!-- ===== LISTE ===== -->
+    <section class="panel" id="panel-liste">
+      <div class="section-title"><h2>Tous les bons actifs</h2></div>
+      <div class="chips" id="chips-liste">
+        <div class="chip active" data-type="tous">Tous</div>
+        <div class="chip" data-type="apero">🥂 Apéro</div>
+        <div class="chip" data-type="vin">🍷 Vin</div>
+        <div class="chip" data-type="gouter">🍪 Goûter</div>
+        <div class="chip" data-type="glace">🍦 Glace</div>
+      </div>
+      <div id="liste-bons"></div>
+    </section>
+
+    <!-- ===== SCAN ===== -->
+    <section class="panel" id="panel-scan">
+      <div class="section-title"><h2>Valider un bon</h2></div>
+      <div class="scan-box">
+        <div id="reader"></div>
+        <button class="btn btn-ghost btn-block" id="btn-toggle-scan" style="margin-top:12px;">📷 Démarrer le scan</button>
+        <div class="manual-scan">
+          <input type="text" id="manual-id" placeholder="…ou coller l'ID du bon">
+          <button class="btn btn-primary" id="btn-manual-valider">OK</button>
+        </div>
+        <div class="scan-hint">Scannez le QR code affiché sur le téléphone du client pour valider son bon.</div>
+      </div>
+    </section>
+
+    <!-- ===== HISTORIQUE ===== -->
+    <section class="panel" id="panel-historique">
+      <div class="section-title"><h2>Historique</h2></div>
+      <div id="historique-bons"></div>
+    </section>
+  </main>
+
+  <button class="fab" id="btn-open-create" title="Créer des bons">➕</button>
+
+  <nav class="bottomnav">
+    <button class="active" data-tab="accueil"><span class="ic">🏠</span>Accueil</button>
+    <button data-tab="liste"><span class="ic">🎫</span>Bons</button>
+    <button data-tab="scan"><span class="ic">📷</span>Scanner</button>
+    <button data-tab="historique"><span class="ic">🕓</span>Historique</button>
+  </nav>
+</div>
+
+<!-- ===== MODAL CREATION ===== -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Créer des bons</h3>
+    <div class="sub">Choisissez le nombre de bons par catégorie, ajoutez un commentaire si besoin.</div>
+    <div id="create-form"></div>
+    <div class="progress-wrap" id="create-progress" style="display:none;">
+      <div class="progress-bar"><div class="fill" id="create-progress-fill"></div></div>
+      <div class="progress-text" id="create-progress-text">Création en cours…</div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button class="btn btn-ghost" id="btn-cancel-create" style="flex:1;">Annuler</button>
+      <button class="btn btn-primary" id="btn-submit-create" style="flex:2;">Créer les bons</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL DETAIL ===== -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <div class="stamp lg" id="detail-stamp"></div>
+      <div>
+        <h3 id="detail-title" style="margin-bottom:2px;"></h3>
+        <span class="badge" id="detail-badge"></span>
+      </div>
+    </div>
+    <div class="detail-grid" id="detail-grid"></div>
+    <div style="display:flex; gap:10px; margin-top:6px;">
+      <button class="btn btn-ghost" id="btn-close-detail" style="flex:1;">Fermer</button>
+      <button class="btn btn-danger" id="btn-revoke" style="flex:1;">🚫 Révoquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CONFIRMATION SCAN ===== -->
+<div class="modal-overlay" id="modal-scan-confirm">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Valider ce bon ?</h3>
+    <div class="sub">Vérifiez les informations avant de valider.</div>
+    <div class="detail-grid" id="scan-detail-grid"></div>
+    <div style="display:flex; gap:10px; margin-top:6px;">
+      <button class="btn btn-ghost" id="btn-cancel-scan" style="flex:1;">Annuler</button>
+      <button class="btn btn-primary" id="btn-confirm-scan" style="flex:1;">✅ Valider</button>
+    </div>
+  </div>
+</div>
+
+<div id="loader-overlay"><div class="spinner">🎫</div></div>
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAw8DGUJlxu9UZ_l1RagF_-carRwja231Y",
+  authDomain: "caisse-enregistreuse-2bbee.firebaseapp.com",
+  projectId: "caisse-enregistreuse-2bbee",
+  storageBucket: "caisse-enregistreuse-2bbee.firebasestorage.app",
+  messagingSenderId: "898347361812",
+  appId: "1:898347361812:web:80591b2c3146fafaa6a901",
+  measurementId: "G-D5P8N0S5CS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ================= CATEGORIES ================= */
+const CATS = {
+  apero:  { label:'Apéro',  emoji:'🥂', color:'var(--accent-apero)'  },
+  vin:    { label:'Vin',    emoji:'🍷', color:'var(--accent-vin)'    },
+  gouter: { label:'Goûter', emoji:'🍪', color:'var(--accent-gouter)' },
+  glace:  { label:'Glace',  emoji:'🍦', color:'var(--accent-glace)'  }
+};
+const STATUT_LABEL = { actif:'Actif', utilise:'Utilisé', revoque:'Révoqué' };
+
+let allBons = [];
+let currentFilterType = 'tous';
+let currentDetailId = null;
+let scanning = false;
+let html5Qr = null;
+
+/* ================= HELPERS UI ================= */
+function showLoader(v){ document.getElementById('loader-overlay').classList.toggle('active', v); }
+
+function showToast(msg, type='ok'){
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = (type==='error' ? '⚠️ ' : type==='ok' ? '✅ ' : '') + msg;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2800);
+}
+
+function fmtDate(ts){
+  if(!ts || !ts.toDate) return '—';
+  const d = ts.toDate();
+  return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'short', year:'numeric'}) + ' à ' +
+         d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ================= TABS ================= */
+document.querySelectorAll('nav.bottomnav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.bottomnav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab !== 'scan' && scanning) stopScan();
+  });
+});
+
+/* ================= FIRESTORE LISTENER ================= */
+function initListener(){
+  showLoader(true);
+  db.collection('bons').orderBy('dateCreation','desc').onSnapshot(snap=>{
+    allBons = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    showLoader(false);
+    renderStats();
+    renderApercu();
+    renderListe();
+    renderHistorique();
+    if(currentDetailId) refreshDetailModal();
+  }, err=>{
+    showLoader(false);
+    showToast("Connexion Firestore impossible : "+err.message, 'error');
+  });
+}
+
+/* ================= STATS ================= */
+function renderStats(){
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = Object.keys(CATS).map(key=>{
+    const c = CATS[key];
+    const count = allBons.filter(b=>b.type===key && b.statut==='actif').length;
+    return `<div class="stat-card" style="--cat-color:${c.color}">
+      <div class="stamp">${c.emoji}</div>
+      <div class="count">${count}</div>
+      <div class="label">${c.label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderApercu(){
+  const wrap = document.getElementById('apercu-recent');
+  const recents = allBons.slice(0,4);
+  if(recents.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="em">🎟️</span>Aucun bon pour l'instant</div>`;
+    return;
+  }
+  wrap.innerHTML = recents.map(ticketHTML).join('');
+  attachTicketClicks(wrap);
+}
+
+/* ================= TICKET RENDERING ================= */
+function ticketHTML(b){
+  const c = CATS[b.type] || {label:b.type, emoji:'🎫', color:'#999'};
+  return `<div class="ticket" style="--cat-color:${c.color}" data-id="${b.id}">
+    <div class="stub"><div class="stamp sm" style="color:${c.color}">${c.emoji}</div></div>
+    <div class="body">
+      <div class="row1">
+        <span class="cat-name">${c.label}</span>
+        <span class="badge ${b.statut}">${STATUT_LABEL[b.statut]||b.statut}</span>
+      </div>
+      ${b.commentaire ? `<div class="comment">${escapeHTML(b.commentaire)}</div>` : ''}
+      <div class="date">Créé le ${fmtDate(b.dateCreation)}</div>
+    </div>
+  </div>`;
+}
+function escapeHTML(s){ const d=document.createElement('div'); d.innerText=s; return d.innerHTML; }
+function attachTicketClicks(container){
+  container.querySelectorAll('.ticket').forEach(el=>{
+    el.addEventListener('click', ()=> openDetail(el.dataset.id));
+  });
+}
+
+/* ================= LISTE ================= */
+document.querySelectorAll('#chips-liste .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#chips-liste .chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilterType = chip.dataset.type;
+    renderListe();
+  });
+});
+function renderListe(){
+  const wrap = document.getElementById('liste-bons');
+  let items = allBons.filter(b=>b.statut==='actif');
+  if(currentFilterType !== 'tous') items = items.filter(b=>b.type===currentFilterType);
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="em">📭</span>Aucun bon actif ici</div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(ticketHTML).join('');
+  attachTicketClicks(wrap);
+}
+
+/* ================= HISTORIQUE ================= */
+function renderHistorique(){
+  const wrap = document.getElementById('historique-bons');
+  const items = allBons.filter(b=>b.statut!=='actif');
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="em">🕓</span>Pas encore d'historique</div>`;
+    return;
+  }
+  wrap.innerHTML = items.map(ticketHTML).join('');
+  attachTicketClicks(wrap);
+}
+
+/* ================= DETAIL MODAL ================= */
+function openDetail(id){
+  currentDetailId = id;
+  refreshDetailModal();
+  document.getElementById('modal-detail').classList.add('active');
+}
+function refreshDetailModal(){
+  const b = allBons.find(x=>x.id===currentDetailId);
+  if(!b){ closeModal('modal-detail'); return; }
+  const c = CATS[b.type] || {label:b.type, emoji:'🎫', color:'#999'};
+  document.getElementById('detail-stamp').style.color = c.color;
+  document.getElementById('detail-stamp').innerText = c.emoji;
+  document.getElementById('detail-title').innerText = c.label;
+  const badge = document.getElementById('detail-badge');
+  badge.className = 'badge ' + b.statut;
+  badge.innerText = STATUT_LABEL[b.statut] || b.statut;
+
+  let rows = `
+    <div class="detail-row"><span class="k">Commentaire</span><span class="v">${b.commentaire ? escapeHTML(b.commentaire) : '—'}</span></div>
+    <div class="detail-row"><span class="k">Créé le</span><span class="v">${fmtDate(b.dateCreation)}</span></div>`;
+  if(b.statut==='utilise') rows += `<div class="detail-row"><span class="k">Utilisé le</span><span class="v">${fmtDate(b.dateUtilisation)}</span></div>`;
+  if(b.statut==='revoque') rows += `<div class="detail-row"><span class="k">Révoqué le</span><span class="v">${fmtDate(b.dateRevocation)}</span></div>`;
+  document.getElementById('detail-grid').innerHTML = rows;
+
+  document.getElementById('btn-revoke').style.display = (b.statut==='actif') ? 'flex' : 'none';
+}
+document.getElementById('btn-close-detail').addEventListener('click', ()=> closeModal('modal-detail'));
+document.getElementById('btn-revoke').addEventListener('click', async ()=>{
+  if(!currentDetailId) return;
+  if(!confirm('Révoquer ce bon ? Cette action est définitive.')) return;
+  try{
+    showLoader(true);
+    await db.collection('bons').doc(currentDetailId).update({
+      statut:'revoque',
+      dateRevocation: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showLoader(false);
+    showToast('Bon révoqué');
+    closeModal('modal-detail');
+  }catch(e){
+    showLoader(false);
+    showToast('Erreur : '+e.message, 'error');
+  }
+});
+
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov) closeModal(ov.id); });
+});
+
+/* ================= CREATE MODAL ================= */
+const qty = { apero:0, vin:0, gouter:0, glace:0 };
+const comments = { apero:[], vin:[], gouter:[], glace:[] };
+
+function renderCreateForm(){
+  const wrap = document.getElementById('create-form');
+  wrap.innerHTML = Object.keys(CATS).map(key=>{
+    const c = CATS[key];
+    return `
+    <div class="qty-row" style="--cat-color:${c.color}">
+      <div class="stamp sm">${c.emoji}</div>
+      <div class="qname">${c.label}</div>
+      <div class="qty-ctrl">
+        <button type="button" data-act="minus" data-key="${key}">−</button>
+        <span id="qty-${key}">0</span>
+        <button type="button" data-act="plus" data-key="${key}">+</button>
+      </div>
+    </div>
+    <div class="comment-fields" id="comments-${key}"></div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.qty-ctrl button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.key;
+      if(btn.dataset.act==='plus') qty[key] = Math.min(qty[key]+1, 30);
+      else qty[key] = Math.max(qty[key]-1, 0);
+      document.getElementById('qty-'+key).innerText = qty[key];
+      renderCommentFields(key);
+    });
+  });
+}
+
+function renderCommentFields(key){
+  const n = qty[key];
+  const arr = comments[key];
+  arr.length = n;
+  const box = document.getElementById('comments-'+key);
+  if(n===0){ box.innerHTML=''; return; }
+  box.innerHTML = Array.from({length:n}).map((_,i)=>`
+    <div>
+      <div class="cf-label">${CATS[key].label} #${i+1} — commentaire (optionnel)</div>
+      <textarea data-key="${key}" data-idx="${i}" placeholder="Ex: offert pour l'anniversaire de…">${arr[i]||''}</textarea>
+    </div>`).join('');
+  box.querySelectorAll('textarea').forEach(ta=>{
+    ta.addEventListener('input', ()=>{ comments[ta.dataset.key][ta.dataset.idx] = ta.value; });
+  });
+}
+
+document.getElementById('btn-open-create').addEventListener('click', ()=>{
+  Object.keys(qty).forEach(k=>{ qty[k]=0; comments[k]=[]; });
+  renderCreateForm();
+  document.getElementById('create-progress').style.display='none';
+  document.getElementById('btn-submit-create').disabled = false;
+  document.getElementById('modal-create').classList.add('active');
+});
+document.getElementById('btn-cancel-create').addEventListener('click', ()=> closeModal('modal-create'));
+
+document.getElementById('btn-submit-create').addEventListener('click', async ()=>{
+  const toCreate = [];
+  Object.keys(qty).forEach(key=>{
+    for(let i=0;i<qty[key];i++){
+      toCreate.push({ type:key, commentaire:(comments[key][i]||'').trim() });
+    }
+  });
+  if(toCreate.length===0){ showToast('Choisissez au moins un bon à créer', 'error'); return; }
+
+  const submitBtn = document.getElementById('btn-submit-create');
+  submitBtn.disabled = true;
+  const progressWrap = document.getElementById('create-progress');
+  const fill = document.getElementById('create-progress-fill');
+  const text = document.getElementById('create-progress-text');
+  progressWrap.style.display = 'block';
+
+  try{
+    for(let i=0;i<toCreate.length;i++){
+      const item = toCreate[i];
+      await db.collection('bons').add({
+        type: item.type,
+        commentaire: item.commentaire,
+        statut: 'actif',
+        dateCreation: firebase.firestore.FieldValue.serverTimestamp(),
+        dateUtilisation: null,
+        dateRevocation: null
+      });
+      const pct = Math.round(((i+1)/toCreate.length)*100);
+      fill.style.width = pct+'%';
+      text.innerText = `Création ${i+1}/${toCreate.length}…`;
+    }
+    showToast(`${toCreate.length} bon${toCreate.length>1?'s':''} créé${toCreate.length>1?'s':''} 🎉`);
+    closeModal('modal-create');
+  }catch(e){
+    showToast('Erreur pendant la création : '+e.message, 'error');
+  }finally{
+    submitBtn.disabled = false;
+  }
+});
+
+/* ================= SCAN ================= */
+document.getElementById('btn-toggle-scan').addEventListener('click', ()=>{
+  scanning ? stopScan() : startScan();
+});
+function startScan(){
+  html5Qr = new Html5Qrcode("reader");
+  Html5Qrcode.getCameras().then(cams=>{
+    if(!cams || cams.length===0){ showToast('Aucune caméra détectée', 'error'); return; }
+    const camId = cams.find(c=>/back|rear|environment/i.test(c.label))?.id || cams[cams.length-1].id;
+    html5Qr.start(camId, { fps:10, qrbox:230 }, onScanSuccess).then(()=>{
+      scanning = true;
+      document.getElementById('btn-toggle-scan').innerText = '⏹️ Arrêter le scan';
+    }).catch(err=>{ showToast("Impossible d'accéder à la caméra", 'error'); });
+  }).catch(()=> showToast("Autorisation caméra refusée", 'error'));
+}
+function stopScan(){
+  if(html5Qr){
+    html5Qr.stop().then(()=>html5Qr.clear()).catch(()=>{});
+  }
+  scanning = false;
+  document.getElementById('btn-toggle-scan').innerText = '📷 Démarrer le scan';
+}
+function onScanSuccess(decodedText){
+  stopScan();
+  lookupAndConfirm(decodedText.trim());
+}
+document.getElementById('btn-manual-valider').addEventListener('click', ()=>{
+  const val = document.getElementById('manual-id').value.trim();
+  if(!val) return;
+  lookupAndConfirm(val);
+});
+
+let scannedBonId = null;
+async function lookupAndConfirm(id){
+  showLoader(true);
+  try{
+    const doc = await db.collection('bons').doc(id).get();
+    showLoader(false);
+    if(!doc.exists){ showToast('Bon introuvable ❌', 'error'); return; }
+    const b = doc.data();
+    if(b.statut !== 'actif'){
+      showToast(b.statut==='utilise' ? 'Ce bon a déjà été utilisé' : 'Ce bon a été révoqué', 'error');
+      return;
+    }
+    scannedBonId = id;
+    const c = CATS[b.type] || {label:b.type, emoji:'🎫'};
+    document.getElementById('scan-detail-grid').innerHTML = `
+      <div class="detail-row"><span class="k">Catégorie</span><span class="v">${c.emoji} ${c.label}</span></div>
+      <div class="detail-row"><span class="k">Commentaire</span><span class="v">${b.commentaire?escapeHTML(b.commentaire):'—'}</span></div>
+      <div class="detail-row"><span class="k">Créé le</span><span class="v">${fmtDate(b.dateCreation)}</span></div>`;
+    document.getElementById('modal-scan-confirm').classList.add('active');
+  }catch(e){
+    showLoader(false);
+    showToast('Erreur : '+e.message, 'error');
+  }
+}
+document.getElementById('btn-cancel-scan').addEventListener('click', ()=>{
+  scannedBonId = null;
+  closeModal('modal-scan-confirm');
+});
+document.getElementById('btn-confirm-scan').addEventListener('click', async ()=>{
+  if(!scannedBonId) return;
+  try{
+    showLoader(true);
+    await db.collection('bons').doc(scannedBonId).update({
+      statut:'utilise',
+      dateUtilisation: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showLoader(false);
+    showToast('Bon validé ✅');
+    document.getElementById('manual-id').value='';
+    scannedBonId = null;
+    closeModal('modal-scan-confirm');
+  }catch(e){
+    showLoader(false);
+    showToast('Erreur : '+e.message, 'error');
+  }
+});
+
+/* ================= INIT ================= */
+initListener();
+</script>
+</body>
+</html>
