@@ -122,13 +122,14 @@
   .btn:disabled{ opacity:.5; pointer-events:none; }
 
   .fab{
-    position:fixed; bottom:96px; left:50%; transform:translateX(calc(-50% + 190px));
+    position:fixed;
+    bottom:calc(88px + env(safe-area-inset-bottom));
+    right:max(20px, calc((100vw - 480px) / 2 + 20px));
     background:var(--accent-gouter); color:#241505; border:none;
     width:58px; height:58px; border-radius:50%; font-size:24px;
     box-shadow:0 10px 24px rgba(232,163,61,.45); z-index:25; cursor:pointer;
   }
-  .fab:active{ transform:translateX(calc(-50% + 190px)) scale(.92); }
-  @media (max-width:480px){ .fab{ transform:translateX(0); right:20px; left:auto; } .fab:active{ transform:scale(.92);} }
+  .fab:active{ transform:scale(.92); }
 
   /* ---------- FILTER CHIPS ---------- */
   .chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:4px; }
@@ -372,7 +373,33 @@
     <div class="detail-grid" id="detail-grid"></div>
     <div style="display:flex; gap:10px; margin-top:6px;">
       <button class="btn btn-ghost" id="btn-close-detail" style="flex:1;">Fermer</button>
-      <button class="btn btn-danger" id="btn-revoke" style="flex:1;">🚫 Révoquer</button>
+      <button class="btn btn-ghost" id="btn-exchange" style="flex:1;">🔄 Échanger</button>
+    </div>
+    <button class="btn btn-danger btn-block" id="btn-revoke" style="margin-top:10px;">🚫 Révoquer</button>
+  </div>
+</div>
+
+<!-- ===== MODAL ÉCHANGE ===== -->
+<div class="modal-overlay" id="modal-exchange">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <div class="stamp lg" id="exchange-stamp"></div>
+      <div>
+        <h3 style="margin-bottom:2px;">Échanger ce bon</h3>
+        <div class="sub" id="exchange-source-label" style="margin:0;"></div>
+      </div>
+    </div>
+    <div class="sub">Choisissez contre combien de bons de chaque type l'échanger.</div>
+    <div id="exchange-form"></div>
+    <div class="progress-text" id="exchange-total" style="text-align:left; margin:2px 0 0;"></div>
+    <div class="progress-wrap" id="exchange-progress" style="display:none;">
+      <div class="progress-bar"><div class="fill" id="exchange-progress-fill"></div></div>
+      <div class="progress-text" id="exchange-progress-text">Échange en cours…</div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button class="btn btn-ghost" id="btn-cancel-exchange" style="flex:1;">Annuler</button>
+      <button class="btn btn-primary" id="btn-submit-exchange" style="flex:2;">Valider l'échange</button>
     </div>
   </div>
 </div>
@@ -578,6 +605,7 @@ function refreshDetailModal(){
   document.getElementById('detail-grid').innerHTML = rows;
 
   document.getElementById('btn-revoke').style.display = (b.statut==='actif') ? 'flex' : 'none';
+  document.getElementById('btn-exchange').style.display = (b.statut==='actif') ? 'flex' : 'none';
 }
 document.getElementById('btn-close-detail').addEventListener('click', ()=> closeModal('modal-detail'));
 document.getElementById('btn-revoke').addEventListener('click', async ()=>{
@@ -695,6 +723,118 @@ document.getElementById('btn-submit-create').addEventListener('click', async ()=
     closeModal('modal-create');
   }catch(e){
     showToast('Erreur pendant la création : '+e.message, 'error');
+  }finally{
+    submitBtn.disabled = false;
+  }
+});
+
+/* ================= EXCHANGE MODAL ================= */
+const exchangeQty = { apero:0, vin:0, gouter:0, glace:0 };
+let exchangeSourceId = null;
+
+function renderExchangeForm(){
+  const wrap = document.getElementById('exchange-form');
+  wrap.innerHTML = Object.keys(CATS).map(key=>{
+    const c = CATS[key];
+    return `
+    <div class="qty-row" style="--cat-color:${c.color}">
+      <div class="stamp sm">${c.emoji}</div>
+      <div class="qname">${c.label}</div>
+      <div class="qty-ctrl">
+        <button type="button" data-act="minus" data-key="${key}">−</button>
+        <span id="exqty-${key}">0</span>
+        <button type="button" data-act="plus" data-key="${key}">+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.qty-ctrl button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.key;
+      if(btn.dataset.act==='plus') exchangeQty[key] = Math.min(exchangeQty[key]+1, 30);
+      else exchangeQty[key] = Math.max(exchangeQty[key]-1, 0);
+      document.getElementById('exqty-'+key).innerText = exchangeQty[key];
+      updateExchangeTotal();
+    });
+  });
+  updateExchangeTotal();
+}
+
+function updateExchangeTotal(){
+  const total = Object.values(exchangeQty).reduce((s,n)=>s+n,0);
+  document.getElementById('exchange-total').innerText =
+    total>0 ? `Total : ${total} bon${total>1?'s':''} en échange` : '';
+}
+
+document.getElementById('btn-exchange').addEventListener('click', ()=>{
+  if(!currentDetailId) return;
+  const b = allBons.find(x=>x.id===currentDetailId);
+  if(!b) return;
+  exchangeSourceId = currentDetailId;
+  Object.keys(exchangeQty).forEach(k=>{ exchangeQty[k]=0; });
+  renderExchangeForm();
+  const c = CATS[b.type] || {label:b.type, emoji:'🎫', color:'#999'};
+  document.getElementById('exchange-stamp').style.color = c.color;
+  document.getElementById('exchange-stamp').innerText = c.emoji;
+  document.getElementById('exchange-source-label').innerText = `Bon actuel : ${c.emoji} ${c.label}`;
+  document.getElementById('exchange-progress').style.display = 'none';
+  document.getElementById('btn-submit-exchange').disabled = false;
+  closeModal('modal-detail');
+  document.getElementById('modal-exchange').classList.add('active');
+});
+document.getElementById('btn-cancel-exchange').addEventListener('click', ()=>{
+  exchangeSourceId = null;
+  closeModal('modal-exchange');
+});
+
+document.getElementById('btn-submit-exchange').addEventListener('click', async ()=>{
+  if(!exchangeSourceId) return;
+  const source = allBons.find(x=>x.id===exchangeSourceId);
+  if(!source){ showToast('Bon introuvable', 'error'); closeModal('modal-exchange'); return; }
+  if(source.statut !== 'actif'){ showToast('Ce bon n\'est plus actif', 'error'); closeModal('modal-exchange'); return; }
+
+  const targets = Object.keys(exchangeQty).filter(k=>exchangeQty[k]>0);
+  const totalTargets = targets.reduce((s,k)=>s+exchangeQty[k],0);
+  if(totalTargets===0){ showToast('Choisissez au moins un bon en échange', 'error'); return; }
+
+  const srcLabel = (CATS[source.type]||{label:source.type}).label;
+  const destPart = targets.map(k=>`${exchangeQty[k]} ${CATS[k].label}`).join(', ');
+  const commentaire = `Échange 1 ${srcLabel} → ${destPart}`;
+
+  const submitBtn = document.getElementById('btn-submit-exchange');
+  submitBtn.disabled = true;
+  const progressWrap = document.getElementById('exchange-progress');
+  const fill = document.getElementById('exchange-progress-fill');
+  const text = document.getElementById('exchange-progress-text');
+  progressWrap.style.display = 'block';
+  fill.style.width = '15%';
+  text.innerText = 'Échange en cours…';
+
+  try{
+    const batch = db.batch();
+    batch.delete(db.collection('bons').doc(exchangeSourceId));
+    targets.forEach(key=>{
+      for(let i=0;i<exchangeQty[key];i++){
+        const ref = db.collection('bons').doc();
+        batch.set(ref, {
+          type: key,
+          commentaire,
+          statut: 'actif',
+          dateCreation: firebase.firestore.FieldValue.serverTimestamp(),
+          dateUtilisation: null,
+          dateRevocation: null
+        });
+      }
+    });
+    fill.style.width = '70%';
+    await batch.commit();
+    fill.style.width = '100%';
+    showToast(`Échange effectué : ${totalTargets} bon${totalTargets>1?'s':''} créé${totalTargets>1?'s':''} 🔄`);
+    exchangeSourceId = null;
+    currentDetailId = null;
+    closeModal('modal-exchange');
+  }catch(e){
+    showToast("Erreur pendant l'échange : "+e.message, 'error');
   }finally{
     submitBtn.disabled = false;
   }
