@@ -116,11 +116,19 @@
   }
   .btn:active{ transform:scale(.96); }
   .btn-primary{ background:var(--accent-gouter); color:#241505; }
-  .btn-ghost{ background:rgba(251,248,242,.08); color:var(--paper); border:1px solid rgba(251,248,242,.18); }
+.btn-ghost {
+  background: rgba(0, 120, 212, .14);
+  color: #69B7FF;
+  border: 1px solid rgba(0, 120, 212, .4);
+}
   .btn-danger{ background:rgba(229,72,77,.14); color:#FF9A9D; border:1px solid rgba(229,72,77,.4); }
   .btn-block{ width:100%; }
   .btn:disabled{ opacity:.5; pointer-events:none; }
-
+.btn-valider {
+  background: rgba(40, 167, 69, .14);
+  color: #70D88A;
+  border: 1px solid rgba(40, 167, 69, .4);
+}
   .fab{
     position:fixed;
     bottom:calc(88px + env(safe-area-inset-bottom));
@@ -318,7 +326,7 @@
         <button class="btn btn-ghost btn-block" id="btn-toggle-scan" style="margin-top:12px;">📷 Démarrer le scan</button>
         <div class="manual-scan">
           <input type="text" id="manual-id" placeholder="…ou coller l'ID du bon">
-          <button class="btn btn-primary" id="btn-manual-valider">OK</button>
+          <button class="btn btn-valider btn-block" id="btn-manual-valider">OK</button>
         </div>
         <div class="scan-hint">Scannez le QR code affiché sur le téléphone du client pour valider son bon.</div>
       </div>
@@ -353,8 +361,8 @@
       <div class="progress-text" id="create-progress-text">Création en cours…</div>
     </div>
     <div style="display:flex; gap:10px; margin-top:18px;">
-      <button class="btn btn-ghost" id="btn-cancel-create" style="flex:1;">Annuler</button>
-      <button class="btn btn-primary" id="btn-submit-create" style="flex:2;">Créer les bons</button>
+      <button class="btn btn-danger btn-block" id="btn-cancel-create" style="flex:1;">Annuler</button>
+      <button class="btn btn-valider btn-block" id="btn-submit-create" style="flex:2;">Créer les bons</button>
     </div>
   </div>
 </div>
@@ -372,10 +380,9 @@
     </div>
     <div class="detail-grid" id="detail-grid"></div>
     <div style="display:flex; gap:10px; margin-top:6px;">
-      <button class="btn btn-ghost" id="btn-close-detail" style="flex:1;">Fermer</button>
       
     </div>
-    <button class="btn btn-ghost" id="btn-exchange" style="flex:1;">🔄 Échanger</button>
+    <button class="btn btn-ghost btn-block" id="btn-exchange" style="flex:1;">🔄 Échanger</button>
     <button class="btn btn-danger btn-block" id="btn-revoke" style="margin-top:10px;">🚫 Révoquer</button>
   </div>
 </div>
@@ -399,8 +406,8 @@
       <div class="progress-text" id="exchange-progress-text">Échange en cours…</div>
     </div>
     <div style="display:flex; gap:10px; margin-top:18px;">
-      <button class="btn btn-ghost" id="btn-cancel-exchange" style="flex:1;">Annuler</button>
-      <button class="btn btn-primary" id="btn-submit-exchange" style="flex:2;">Valider l'échange</button>
+      <button class="btn btn-danger btn-block" id="btn-cancel-exchange" style="flex:1;">Annuler</button>
+      <button class="btn btn-valider btn-block" id="btn-submit-exchange" style="flex:2;">Valider l'échange</button>
     </div>
   </div>
 </div>
@@ -413,8 +420,8 @@
     <div class="sub">Vérifiez les informations avant de valider.</div>
     <div class="detail-grid" id="scan-detail-grid"></div>
     <div style="display:flex; gap:10px; margin-top:6px;">
-      <button class="btn btn-ghost" id="btn-cancel-scan" style="flex:1;">Annuler</button>
-      <button class="btn btn-primary" id="btn-confirm-scan" style="flex:1;">✅ Valider</button>
+      <button class="btn btn-ghost btn-block" id="btn-cancel-scan" style="flex:1;">Annuler</button>
+      <button class="btn btn-valider btn-block" id="btn-confirm-scan" style="flex:1;">✅ Valider</button>
     </div>
   </div>
 </div>
@@ -608,7 +615,6 @@ function refreshDetailModal(){
   document.getElementById('btn-revoke').style.display = (b.statut==='actif') ? 'flex' : 'none';
   document.getElementById('btn-exchange').style.display = (b.statut==='actif') ? 'flex' : 'none';
 }
-document.getElementById('btn-close-detail').addEventListener('click', ()=> closeModal('modal-detail'));
 document.getElementById('btn-revoke').addEventListener('click', async ()=>{
   if(!currentDetailId) return;
   if(!confirm('Révoquer ce bon ? Cette action est définitive.')) return;
