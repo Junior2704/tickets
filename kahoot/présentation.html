@@ -435,7 +435,7 @@ const root = document.getElementById("root");
 const urlParams = new URLSearchParams(location.search);
 let quizId = urlParams.get("quiz");
 let sessionId = null, sessionData = null, quiz = null, questions = [];
-let unsubSession = null, unsubPlayers = null, unsubAnswers = null;
+let unsubSession = null, unsubPlayers = null, unsubAnswers = null; unsubReactions = null;
 let players = [];
 let currentAnswers = [];
 let timerInterval = null;
