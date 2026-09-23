@@ -408,7 +408,8 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBxXW6RH9paJ66E_8E_bQpR688bTfYvBSY",
@@ -873,7 +874,62 @@ function startTimer(total){
 
 async function showResults(){
   clearInterval(timerInterval);
-  await updateDoc(doc(db,"sessions",sessionId), {status:"results"});
+
+  /*
+   * Les réponses contiennent déjà les points calculés par le joueur.
+   * On crédite maintenant ces points, au moment exact où le présentateur
+   * affiche les résultats. Une transaction protège contre un double crédit.
+   */
+  const answersSnap = await getDocs(
+    query(
+      collection(db,"sessions",sessionId,"answers"),
+      where("questionIndex","==",sessionData.currentIndex)
+    )
+  );
+
+  for(const answerDoc of answersSnap.docs){
+    const answerRef = answerDoc.ref;
+    const answer = answerDoc.data();
+    const points = Number(answer.pointsEarned || 0);
+
+    if(points <= 0 || answer.scoreApplied === true){
+      continue;
+    }
+
+    const playerRef = doc(
+      db,
+      "sessions",
+      sessionId,
+      "players",
+      answer.playerId
+    );
+
+    await runTransaction(db, async transaction => {
+      const freshAnswerSnap = await transaction.get(answerRef);
+      if(!freshAnswerSnap.exists()) return;
+
+      const freshAnswer = freshAnswerSnap.data();
+      if(freshAnswer.scoreApplied === true) return;
+
+      const playerSnap = await transaction.get(playerRef);
+      if(!playerSnap.exists()) return;
+
+      const currentScore = Number(playerSnap.data().score || 0);
+
+      transaction.update(playerRef, {
+        score: currentScore + Number(freshAnswer.pointsEarned || 0)
+      });
+
+      transaction.update(answerRef, {
+        scoreApplied: true
+      });
+    });
+  }
+
+  await updateDoc(
+    doc(db,"sessions",sessionId),
+    {status:"results"}
+  );
 }
 
 function renderResults(){
