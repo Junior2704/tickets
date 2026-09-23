@@ -224,7 +224,7 @@ function render(){
 
 function renderLobby(){
   clearInterval(timerInterval);
-  const joinUrl = new URL("participant.html", location.href).href + "?pin=" + sessionData.pin;
+  const joinUrl = new URL("réponse.html", location.href).href + "?pin=" + sessionData.pin;
   root.innerHTML = `
     <div class="screen">
       <div class="lobby-top">
@@ -233,7 +233,7 @@ function renderLobby(){
           <div class="lbl">CODE PIN</div>
           <div class="pin">${sessionData.pin}</div>
         </div>
-        <div class="join-hint">Rendez-vous sur <b>participant.html</b> et entrez le code</div>
+        <div class="join-hint">Scannez ce qr-code pour jouer</div>
         <img class="qr" width="140" height="140" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(joinUrl)}" alt="QR code">
       </div>
       <div class="players-panel">
