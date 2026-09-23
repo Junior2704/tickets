@@ -97,6 +97,296 @@ body{font-family:'Poppins',sans-serif; background:radial-gradient(circle at 50% 
 .confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:5;}
 .confetti span{position:absolute; top:-10px; width:8px; height:14px; opacity:.9; animation:fall linear forwards;}
 @keyframes fall{to{transform:translateY(110vh) rotate(360deg);}}
+/* =========================================================
+   PRESENTATEUR
+========================================================= */
+
+.presentation-settings{
+  position:fixed;
+  top:20px;
+  left:20px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:rgba(23,17,48,.9);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.15rem;
+  cursor:pointer;
+  z-index:30;
+  transition:.2s;
+  box-shadow:0 8px 25px rgba(0,0,0,.25);
+}
+
+.presentation-settings:hover{
+  transform:rotate(35deg) scale(1.08);
+  background:var(--primary);
+}
+
+/* ===== Panneau participants ===== */
+
+.participants-panel{
+  position:fixed;
+  top:0;
+  left:0;
+  bottom:0;
+  width:360px;
+  max-width:90vw;
+  background:#130e28;
+  border-right:1px solid var(--border);
+  z-index:100;
+  transform:translateX(-105%);
+  transition:transform .3s ease;
+  box-shadow:15px 0 50px rgba(0,0,0,.4);
+  display:flex;
+  flex-direction:column;
+}
+
+.participants-panel.open{
+  transform:translateX(0);
+}
+
+.participants-head{
+  padding:22px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.participants-head h2{
+  font-size:1.15rem;
+  font-weight:800;
+}
+
+.participants-head button{
+  width:38px;
+  height:38px;
+  border:none;
+  border-radius:10px;
+  background:var(--panel2);
+  color:#fff;
+  cursor:pointer;
+  font-size:1rem;
+}
+
+.participants-count{
+  padding:16px 22px;
+  color:var(--muted);
+  border-bottom:1px solid var(--border);
+}
+
+.participants-list{
+  padding:14px;
+  overflow-y:auto;
+  flex:1;
+}
+
+.participant-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:12px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  margin-bottom:8px;
+}
+
+.participant-avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  flex-shrink:0;
+}
+
+.participant-name{
+  flex:1;
+  font-weight:600;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.kick-btn{
+  border:none;
+  background:rgba(239,68,68,.12);
+  color:#f87171;
+  width:34px;
+  height:34px;
+  border-radius:9px;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.kick-btn:hover{
+  background:var(--danger);
+  color:#fff;
+}
+
+.participants-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(3px);
+  z-index:90;
+  display:none;
+}
+
+.participants-overlay.show{
+  display:block;
+}
+
+/* =========================================================
+   ECRAN "ÊTES-VOUS PRÊTS"
+========================================================= */
+
+.ready-screen{
+  text-align:center;
+  max-width:900px;
+  width:100%;
+}
+
+.ready-icon{
+  width:110px;
+  height:110px;
+  margin:0 auto 25px;
+  border-radius:35px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:3rem;
+  box-shadow:0 20px 50px rgba(124,58,237,.35);
+  animation:readyFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes readyFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+
+.ready-screen h1{
+  font-size:clamp(2.5rem,6vw,5rem);
+  font-weight:900;
+  line-height:1;
+  margin-bottom:15px;
+}
+
+.ready-screen .subtitle{
+  color:var(--muted);
+  font-size:1.1rem;
+  margin-bottom:30px;
+}
+
+.ready-players{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:30px;
+  padding:12px 20px;
+  font-weight:700;
+  margin-bottom:35px;
+}
+
+.ready-players i{
+  color:var(--primary-light);
+}
+
+/* =========================================================
+   REACTIONS
+========================================================= */
+
+#reactionOverlay{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transition:opacity .3s;
+}
+
+#reactionOverlay.show{
+  opacity:1;
+}
+
+.reaction-popup{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  animation:reactionPop .45s cubic-bezier(.17,.67,.32,1.4);
+}
+
+.reaction-emoji{
+  font-size:clamp(7rem,18vw,14rem);
+  line-height:1;
+  filter:drop-shadow(0 15px 30px rgba(0,0,0,.4));
+}
+
+.reaction-name{
+  margin-top:20px;
+  background:rgba(15,11,30,.92);
+  border:1px solid var(--border);
+  padding:10px 22px;
+  border-radius:30px;
+  font-weight:800;
+  font-size:1.1rem;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+@keyframes reactionPop{
+  0%{
+    transform:scale(.2) rotate(-15deg);
+    opacity:0;
+  }
+  65%{
+    transform:scale(1.15) rotate(4deg);
+    opacity:1;
+  }
+  100%{
+    transform:scale(1) rotate(0);
+    opacity:1;
+  }
+}
+
+/* petites réactions flottantes */
+
+.floating-reaction{
+  position:fixed;
+  bottom:-80px;
+  font-size:2.5rem;
+  pointer-events:none;
+  z-index:50;
+  animation:floatReaction 3s ease-out forwards;
+}
+
+@keyframes floatReaction{
+  0%{
+    transform:translateY(0) scale(.7);
+    opacity:0;
+  }
+  15%{
+    opacity:1;
+    transform:translateY(-40px) scale(1);
+  }
+  100%{
+    transform:translateY(-90vh) scale(1.2) rotate(20deg);
+    opacity:0;
+  }
+}
 </style>
 </head>
 <body>
@@ -106,10 +396,20 @@ body{font-family:'Poppins',sans-serif; background:radial-gradient(circle at 50% 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, collection, doc, addDoc, updateDoc, onSnapshot, getDoc, getDocs,
-  query, where, orderBy, serverTimestamp, setDoc
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyBxXW6RH9paJ66E_8E_bQpR688bTfYvBSY",
   authDomain: "samu-5ede0.firebaseapp.com",
@@ -145,8 +445,78 @@ if(quizId){
 } else {
   renderQuizSelect();
 }
+function listenReactions(){
+  if(unsubReactions) unsubReactions();
 
-async function renderQuizSelect(){
+  unsubReactions = onSnapshot(
+    query(
+      collection(db, "sessions", sessionId, "reactions"),
+      orderBy("createdAt", "desc")
+    ),
+    snap => {
+      const newReactions = snap.docChanges()
+        .filter(change => change.type === "added")
+        .map(change => ({
+          id: change.doc.id,
+          ...change.doc.data()
+        }));
+
+      newReactions.reverse().forEach(reaction => {
+        reactionQueue.push(reaction);
+      });
+
+      afficherProchaineReaction();
+    }
+  );
+}
+
+function afficherProchaineReaction(){
+  if(reactionDisplaying || !reactionQueue.length) return;
+
+  const reaction = reactionQueue.shift();
+  reactionDisplaying = true;
+
+  const container = document.getElementById("reactionOverlay");
+
+  if(!container){
+    reactionDisplaying = false;
+    return;
+  }
+
+  const emoji = reaction.emoji || "❤️";
+  const name = reaction.name || "Quelqu'un";
+
+  container.innerHTML = `
+    <div class="reaction-popup">
+      <div class="reaction-emoji">${escapeHtml(emoji)}</div>
+      <div class="reaction-name">${escapeHtml(name)}</div>
+    </div>
+  `;
+
+  container.classList.add("show");
+
+  // Petite réaction flottante sur un côté
+  const floating = document.createElement("div");
+
+  floating.className = "floating-reaction";
+  floating.textContent = emoji;
+  floating.style.left = (10 + Math.random() * 80) + "%";
+
+  document.body.appendChild(floating);
+
+  setTimeout(() => floating.remove(), 3000);
+
+  setTimeout(() => {
+    container.classList.remove("show");
+
+    setTimeout(() => {
+      container.innerHTML = "";
+      reactionDisplaying = false;
+      afficherProchaineReaction();
+    }, 300);
+
+  }, 2200);
+}async function renderQuizSelect(){
   root.innerHTML = `<div class="screen"><div class="select-wrap">
     <h1><i class="fa-solid fa-bolt"></i> QuizMaster</h1>
     <p>Choisissez un quiz à lancer</p>
@@ -184,6 +554,7 @@ async function createSession(){
   sessionId = ref.id;
   listenSession();
   listenPlayers();
+  listenReactions();
 }
 
 function listenSession(){
@@ -196,10 +567,32 @@ function listenSession(){
 }
 function listenPlayers(){
   if(unsubPlayers) unsubPlayers();
-  unsubPlayers = onSnapshot(query(collection(db,"sessions",sessionId,"players"), orderBy("score","desc")), snap=>{
-    players = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    if(sessionData && sessionData.status==="lobby") render();
-  });
+
+  unsubPlayers = onSnapshot(
+    query(
+      collection(db,"sessions",sessionId,"players"),
+      orderBy("score","desc")
+    ),
+    snap => {
+
+      players = snap.docs.map(d => ({
+        id:d.id,
+        ...d.data()
+      }));
+
+      if(sessionData && sessionData.status === "lobby"){
+        render();
+
+        // Mise à jour instantanée du compteur
+        const count = document.getElementById("readyPlayersCount");
+
+        if(count){
+          count.textContent =
+            `${players.length} participant${players.length > 1 ? "s" : ""}`;
+        }
+      }
+    }
+  );
 }
 function listenAnswersForCurrent(){
   if(unsubAnswers) unsubAnswers();
@@ -215,6 +608,14 @@ function updateAnswerCount(){
 
 function render(){
   if(!sessionData) return;
+
+  // Overlay réactions permanent
+  if(!document.getElementById("reactionOverlay")){
+    const overlay = document.createElement("div");
+    overlay.id = "reactionOverlay";
+    document.body.appendChild(overlay);
+  }
+
   if(sessionData.status==="lobby") return renderLobby();
   if(sessionData.status==="question") return renderQuestion();
   if(sessionData.status==="results") return renderResults();
@@ -224,36 +625,190 @@ function render(){
 
 function renderLobby(){
   clearInterval(timerInterval);
-  const joinUrl = new URL("réponse.html", location.href).href + "?pin=" + sessionData.pin;
+
+  const joinUrl =
+    new URL("réponse.html", location.href).href +
+    "?pin=" + sessionData.pin;
+
   root.innerHTML = `
+    <button class="presentation-settings" id="settingsBtn" title="Participants">
+      <i class="fa-solid fa-gear"></i>
+    </button>
+
+    <div class="participants-overlay" id="participantsOverlay"></div>
+
+    <div class="participants-panel" id="participantsPanel">
+      <div class="participants-head">
+        <h2><i class="fa-solid fa-users"></i> Participants</h2>
+        <button id="closeParticipants">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="participants-count">
+        <b>${players.length}</b> participant(s) connecté(s)
+      </div>
+
+      <div class="participants-list" id="participantsList"></div>
+    </div>
+
     <div class="screen">
-      <div class="lobby-top">
-        <h1 style="font-weight:900;">${quiz.title}</h1>
-        <div class="pin-box">
+
+      <div class="ready-screen">
+
+        <div class="ready-icon">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+
+        <h1>Êtes-vous prêts ?</h1>
+
+        <div class="subtitle">
+          Rejoignez la partie avec le code ci-dessous
+        </div>
+
+        <div class="pin-box" style="display:inline-block;">
           <div class="lbl">CODE PIN</div>
           <div class="pin">${sessionData.pin}</div>
         </div>
-        <div class="join-hint">Scannez ce qr-code pour jouer</div>
-        <img class="qr" width="140" height="140" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(joinUrl)}" alt="QR code">
-      </div>
-      <div class="players-panel">
-        <div class="players-count"><i class="fa-solid fa-users"></i> ${players.length} participant(s)</div>
-        <div class="players-grid" id="pgrid"></div>
-      </div>
-      <div class="lobby-actions">
-        <button class="btn btn-primary btn-lg" id="startBtn" ${players.length?'':'disabled'}><i class="fa-solid fa-play"></i> Démarrer la partie</button>
-      </div>
-    </div>`;
-  const grid = document.getElementById("pgrid");
-  players.forEach(p=>{
-    const el = document.createElement("div");
-    el.className = "player-chip";
-    el.textContent = p.name;
-    grid.appendChild(el);
-  });
-  document.getElementById("startBtn").onclick = ()=> nextQuestion();
-}
 
+        <div style="margin:20px 0;">
+          <img
+            class="qr"
+            width="150"
+            height="150"
+            src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(joinUrl)}"
+            alt="QR code"
+          >
+        </div>
+
+        <div class="ready-players">
+          <i class="fa-solid fa-users"></i>
+          <span id="readyPlayersCount">
+            ${players.length} participant${players.length > 1 ? "s" : ""}
+          </span>
+        </div>
+
+        <div>
+          <button
+            class="btn btn-primary btn-lg"
+            id="startBtn"
+            ${players.length ? "" : "disabled"}
+          >
+            <i class="fa-solid fa-play"></i>
+            C'est parti !
+          </button>
+        </div>
+
+        <p style="
+          margin-top:18px;
+          color:var(--muted);
+          font-size:.85rem;
+        ">
+          Les participants apparaîtront automatiquement ici
+        </p>
+
+      </div>
+    </div>
+  `;
+
+  renderParticipantsList();
+
+  const panel = document.getElementById("participantsPanel");
+  const overlay = document.getElementById("participantsOverlay");
+
+  document.getElementById("settingsBtn").onclick = () => {
+    panel.classList.add("open");
+    overlay.classList.add("show");
+  };
+
+  document.getElementById("closeParticipants").onclick = closeParticipants;
+  overlay.onclick = closeParticipants;
+
+  document.getElementById("startBtn").onclick = () => {
+    nextQuestion();
+  };
+}
+function renderParticipantsList(){
+  const list = document.getElementById("participantsList");
+
+  if(!list) return;
+
+  if(!players.length){
+    list.innerHTML = `
+      <div style="
+        text-align:center;
+        padding:40px 15px;
+        color:var(--muted);
+      ">
+        <i class="fa-solid fa-user-slash"
+           style="font-size:2rem; margin-bottom:12px;"></i>
+        <p>Aucun participant</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = players.map(p => {
+    const initial = escapeHtml(
+      (p.name || "?").charAt(0).toUpperCase()
+    );
+
+    return `
+      <div class="participant-row">
+        <div class="participant-avatar">
+          ${initial}
+        </div>
+
+        <div class="participant-name">
+          ${escapeHtml(p.name || "Sans nom")}
+        </div>
+
+        <button
+          class="kick-btn"
+          title="Exclure ${escapeHtml(p.name || "")}"
+          data-player-id="${escapeHtml(p.id)}"
+        >
+          <i class="fa-solid fa-user-xmark"></i>
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  list.querySelectorAll(".kick-btn").forEach(btn => {
+    btn.onclick = () => {
+      kickPlayer(btn.dataset.playerId);
+    };
+  });
+}
+function closeParticipants(){
+  document
+    .getElementById("participantsPanel")
+    ?.classList.remove("open");
+
+  document
+    .getElementById("participantsOverlay")
+    ?.classList.remove("show");
+}
+async function kickPlayer(playerId){
+  const player = players.find(p => p.id === playerId);
+
+  if(!player) return;
+
+  const confirmed = confirm(
+    `Exclure "${player.name || "ce participant"}" de la partie ?`
+  );
+
+  if(!confirmed) return;
+
+  try{
+    await deleteDoc(
+      doc(db, "sessions", sessionId, "players", playerId)
+    );
+  }catch(err){
+    console.error("Erreur exclusion participant :", err);
+    alert("Impossible d'exclure ce participant.");
+  }
+}
 async function nextQuestion(){
   const next = sessionData.currentIndex + 1;
   if(next >= questions.length){ return endGame(); }

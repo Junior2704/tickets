@@ -21,6 +21,18 @@ body{font-family:'Poppins',sans-serif; background:radial-gradient(circle at 50% 
 .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; box-shadow:0 6px 20px rgba(124,58,237,.35);}
 .btn-primary:active{transform:scale(.97);}
 .btn-primary:disabled{opacity:.5;}
+.join-loader{
+  width:20px;
+  height:20px;
+  border:3px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:joinSpin .7s linear infinite;
+}
+
+@keyframes joinSpin{
+  to{transform:rotate(360deg);}
+}
 .btn-ghost{background:var(--panel2); color:var(--text); border:1px solid var(--border);}
 
 .form-card{background:var(--panel); border:1px solid var(--border); border-radius:20px; padding:30px 26px; width:100%; max-width:380px;}
@@ -128,35 +140,110 @@ function renderJoin(prefillPin){
   document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") tryJoin(); });
 }
 
+let joinInProgress = false;
+
 async function tryJoin(){
+
+  // Empêche absolument les doubles clics
+  if(joinInProgress) return;
+
   const pin = document.getElementById("pinInput").value.trim();
   const name = document.getElementById("nameInput").value.trim();
   const errEl = document.getElementById("errMsg");
+  const joinBtn = document.getElementById("joinBtn");
+
   errEl.textContent = "";
-  if(!/^\d{6}$/.test(pin)){ errEl.textContent = "Entrez un code PIN à 6 chiffres."; return; }
-  if(!name){ errEl.textContent = "Entrez votre pseudo."; return; }
 
-  const q = query(collection(db,"sessions"), where("pin","==",pin), where("status","==","lobby"));
-  const snap = await getDocs(q);
-  if(snap.empty){ errEl.textContent = "Aucune partie en attente avec ce code."; return; }
-  const sdoc = snap.docs[0];
-  sessionId = sdoc.id;
-  sessionData = sdoc.data();
+  if(!/^\d{6}$/.test(pin)){
+    errEl.textContent = "Entrez un code PIN à 6 chiffres.";
+    return;
+  }
 
-  const qSnap = await getDoc(doc(db,"quizzes",sessionData.quizId));
-  quiz = qSnap.data();
-  const qsSnap = await getDocs(collection(db,"quizzes",sessionData.quizId,"questions"));
-  questions = qsSnap.docs.map(d=>({id:d.id, ...d.data()})).sort((a,b)=>a.order-b.order);
+  if(!name){
+    errEl.textContent = "Entrez votre pseudo.";
+    return;
+  }
 
-  const pref = await addDoc(collection(db,"sessions",sessionId,"players"), {
-    name, score:0, joinedAt: serverTimestamp(), connected:true
-  });
-  playerId = pref.id;
-  playerName = name;
+  // 🔒 Verrouillage immédiat
+  joinInProgress = true;
 
-  listenSession();
+  joinBtn.disabled = true;
+  joinBtn.innerHTML = `
+    <span class="join-loader"></span>
+    Connexion...
+  `;
+
+  // On bloque aussi les champs
+  document.getElementById("pinInput").disabled = true;
+  document.getElementById("nameInput").disabled = true;
+
+  try{
+
+    const q = query(
+      collection(db,"sessions"),
+      where("pin","==",pin),
+      where("status","==","lobby")
+    );
+
+    const snap = await getDocs(q);
+
+    if(snap.empty){
+      throw new Error("Aucune partie en attente avec ce code.");
+    }
+
+    const sdoc = snap.docs[0];
+
+    sessionId = sdoc.id;
+    sessionData = sdoc.data();
+
+    const qSnap = await getDoc(
+      doc(db,"quizzes",sessionData.quizId)
+    );
+
+    quiz = qSnap.data();
+
+    const qsSnap = await getDocs(
+      collection(db,"quizzes",sessionData.quizId,"questions")
+    );
+
+    questions = qsSnap.docs
+      .map(d=>({id:d.id, ...d.data()}))
+      .sort((a,b)=>a.order-b.order);
+
+    const pref = await addDoc(
+      collection(db,"sessions",sessionId,"players"),
+      {
+        name,
+        score:0,
+        joinedAt:serverTimestamp(),
+        connected:true
+      }
+    );
+
+    playerId = pref.id;
+    playerName = name;
+
+    listenSession();
+
+  }catch(error){
+
+    console.error("Erreur lors de la connexion :", error);
+
+    // En cas d'erreur, on autorise à réessayer
+    joinInProgress = false;
+
+    joinBtn.disabled = false;
+    joinBtn.innerHTML = `
+      <i class="fa-solid fa-arrow-right"></i>
+      Rejoindre
+    `;
+
+    document.getElementById("pinInput").disabled = false;
+    document.getElementById("nameInput").disabled = false;
+
+    errEl.textContent = error.message || "Une erreur est survenue.";
+  }
 }
-
 function listenSession(){
   if(unsubSession) unsubSession();
   unsubSession = onSnapshot(doc(db,"sessions",sessionId), snap=>{
