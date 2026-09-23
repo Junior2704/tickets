@@ -737,8 +737,7 @@ import {
   query,
   where,
   serverTimestamp,
-  setDoc,
-  increment
+  setDoc
 }
 from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -2603,26 +2602,11 @@ async function submitAnswer(
   );
 
 
-  /* score */
-
-  if(points>0){
-
-    await updateDoc(
-      doc(
-        db,
-        "sessions",
-        sessionId,
-        "players",
-        playerId
-      ),
-      {
-        score:
-          increment(points)
-      }
-    );
-
-  }
-
+  /*
+   * Le score n'est volontairement PAS modifié ici.
+   * Les points restent stockés dans la réponse et seront
+   * crédités uniquement lorsque le présentateur affiche les résultats.
+   */
 
   renderSubmitted(
     q,
@@ -2995,4 +2979,3 @@ function escapeAttr(s){
 
 </body>
 </html>
-
